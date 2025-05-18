@@ -1,22 +1,17 @@
-CROSS_COMPILE ?=
 OUT_DIR = out
 SRC_DIR = src
 INCLUDE_DIR = src/include
 EXTERN_DIR = deps
-
 BIN_DIR = $(OUT_DIR)/bin
 OBJ_DIR = $(OUT_DIR)/obj
-CC = $(CROSS_COMPILE)gcc
-STRIP = $(CROSS_COMPILE)strip
-
+CC = gcc
+STRIP = strip
 EXPAT_DIR = $(EXTERN_DIR)/libexpat/expat
 EXPAT_BUILD_DIR = $(OUT_DIR)/expat-build
 EXPAT_INSTALL_DIR = $(OUT_DIR)/expat-install
 EXPAT_LIB = $(EXPAT_INSTALL_DIR)/lib/libexpat.a
-
 CFLAGS = -Wall -O3 -pedantic -I$(INCLUDE_DIR) -I$(EXPAT_INSTALL_DIR)/include
 LDFLAGS = -L$(EXPAT_INSTALL_DIR)/lib -static
-
 SOURCES = $(SRC_DIR)/xflasher_v23.c $(SRC_DIR)/sha256.c
 OBJECTS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCES))
 
@@ -32,8 +27,6 @@ $(EXPAT_LIB): | $(OUT_DIR)
 	mkdir -p $(EXPAT_BUILD_DIR)
 	mkdir -p $(EXPAT_INSTALL_DIR)
 	cd $(EXPAT_BUILD_DIR) && \
-	CC=$(CC) \
-	CFLAGS="$(CFLAGS)" \
 	../../$(EXPAT_DIR)/configure \
 	--prefix=$(abspath $(EXPAT_INSTALL_DIR)) \
 	--enable-static \
