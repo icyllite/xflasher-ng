@@ -1,0 +1,4 @@
+
+[submodule "deps/libexpat"]
+	path = deps/libexpat
+	url = https://github.com/libexpat/libexpat
