@@ -16,7 +16,7 @@ OBJECTS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCES))
 
 .PHONY: all clean check-expat
 
-all: check-expat $(BIN_DIR)/xflasher
+all: check-expat $(BIN_DIR)/xflasher-ng
 
 check-expat:
 	@echo "Checking for libexpat..."
@@ -30,7 +30,7 @@ $(OUT_DIR) $(BIN_DIR) $(OBJ_DIR):
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BIN_DIR)/xflasher: $(OBJECTS) | $(BIN_DIR)
+$(BIN_DIR)/xflasher-ng: $(OBJECTS) | $(BIN_DIR)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@ $(EXPAT_LIBS)
 	$(STRIP) $@
 	@echo "Build complete: $@"
