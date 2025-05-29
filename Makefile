@@ -1,46 +1,37 @@
 OUT_DIR = out
 SRC_DIR = src
 INCLUDE_DIR = src/include
-EXTERN_DIR = deps
 BIN_DIR = $(OUT_DIR)/bin
 OBJ_DIR = $(OUT_DIR)/obj
 CC = gcc
 STRIP = strip
-EXPAT_DIR = $(EXTERN_DIR)/libexpat/expat
-EXPAT_BUILD_DIR = $(OUT_DIR)/expat-build
-EXPAT_INSTALL_DIR = $(OUT_DIR)/expat-install
-EXPAT_LIB = $(EXPAT_INSTALL_DIR)/lib/libexpat.a
-CFLAGS = -Wall -O3 -pedantic -I$(INCLUDE_DIR) -I$(EXPAT_INSTALL_DIR)/include
-LDFLAGS = -L$(EXPAT_INSTALL_DIR)/lib -static
+
+EXPAT_CFLAGS := $(shell pkg-config --cflags expat 2>/dev/null || echo "")
+EXPAT_LIBS := $(shell pkg-config --libs expat 2>/dev/null || echo "-lexpat")
+
+CFLAGS = -Wall -O3 -pedantic -I$(INCLUDE_DIR) $(EXPAT_CFLAGS)
+LDFLAGS =
 SOURCES = $(SRC_DIR)/xflasher_v23.c $(SRC_DIR)/sha256.c
 OBJECTS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCES))
 
-.PHONY: all clean distclean expat
+.PHONY: all clean check-expat
 
-all: $(BIN_DIR)/xflasher
+all: check-expat $(BIN_DIR)/xflasher
+
+check-expat:
+	@echo "Checking for libexpat..."
+	@pkg-config --exists expat 2>/dev/null || \
+	(echo "Cant find expat" && \
+	 echo "If build fails, install libexpat-dev (Debian/Ubuntu)")
 
 $(OUT_DIR) $(BIN_DIR) $(OBJ_DIR):
 	mkdir -p $@
 
-$(EXPAT_LIB): | $(OUT_DIR)
-	cd $(EXPAT_DIR) && ./buildconf.sh
-	mkdir -p $(EXPAT_BUILD_DIR)
-	mkdir -p $(EXPAT_INSTALL_DIR)
-	cd $(EXPAT_BUILD_DIR) && \
-	../../$(EXPAT_DIR)/configure \
-	--prefix=$(abspath $(EXPAT_INSTALL_DIR)) \
-	--enable-static \
-	--disable-shared \
-	--without-docbook \
-	--without-xmlwf
-	$(MAKE) -C $(EXPAT_BUILD_DIR)
-	$(MAKE) -C $(EXPAT_BUILD_DIR) install
-
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BIN_DIR)/xflasher: $(OBJECTS) $(EXPAT_LIB) | $(BIN_DIR)
-	$(CC) $(LDFLAGS) $(OBJECTS) -o $@ -lexpat
+$(BIN_DIR)/xflasher: $(OBJECTS) | $(BIN_DIR)
+	$(CC) $(LDFLAGS) $(OBJECTS) -o $@ $(EXPAT_LIBS)
 	$(STRIP) $@
 	@echo "Build complete: $@"
 
